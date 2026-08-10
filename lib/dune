@@ -1,0 +1,13 @@
+(library
+ (name hft_engine)
+ (public_name hft_engine)
+ (inline_tests)
+ (libraries core eio)
+ (preprocess
+  (pps ppx_jane)))
+
+(menhir
+ (modules parser))
+
+(ocamllex
+ (modules lexer))

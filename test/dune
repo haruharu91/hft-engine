@@ -1,0 +1,6 @@
+(test
+ (name test_hft_engine)
+ (modules test_hft_engine)
+ (libraries hft_engine core qcheck qcheck-core.runner)
+ (preprocess
+  (pps ppx_jane)))
