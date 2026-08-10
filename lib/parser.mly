@@ -27,7 +27,7 @@ let build_sov_record field_list =
 %left PLUS MINUS
 %left STAR DIV
 
-%start <Ast.expr> parse_sov parse_proof parse_sexp
+%start <Ast.expr> parse_sov parse_infix parse_sexp
 
 %%
 
@@ -36,8 +36,8 @@ let build_sov_record field_list =
 parse_sov:
   | e = sov_expr EOF { e }
 
-parse_proof:
-  | e = proof_expr EOF { e }
+parse_infix:
+  | e = infix_syntax_expr EOF { e }
 
 parse_sexp:
   | e = sexp_expr EOF { e }
@@ -67,15 +67,17 @@ sov_particle_arg:
   | e = primary_expr PART_NO field = ID
       { ("genitive_access", RecordAccess (e, field)) }
 
-/* 2. Formal Proof / Sequent Judgment Syntax */
+/* 2. Infix / Sequent Judgment Syntax */
 
-proof_expr:
+infix_syntax_expr:
   | RULE name = ID EQ GIVEN var = ID WHERE cond = infix_expr YIELD body = infix_expr
       { Let (name, Lambda (var, Let ("_cond", cond, body)), Var name) }
-  | e1 = proof_expr TURNSTILE e2 = proof_expr
+  | e1 = infix_syntax_expr TURNSTILE e2 = infix_syntax_expr
       { App (e2, e1) }
-  | e1 = proof_expr PIPE e2 = proof_expr
+  | e1 = infix_syntax_expr PIPE e2 = infix_syntax_expr
       { App (e2, e1) }
+  | e1 = infix_syntax_expr e2 = infix_syntax_expr
+      { App (e1, e2) }
   | e = infix_expr
       { e }
 

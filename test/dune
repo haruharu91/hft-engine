@@ -1,6 +1,9 @@
 (test
+ (name test_transpiler)
+ (libraries core ounit2 hft_engine)
+ (deps
+  (glob_files fixtures/*.hft)))
+
+(test
  (name test_hft_engine)
- (modules test_hft_engine)
- (libraries hft_engine core qcheck qcheck-core.runner)
- (preprocess
-  (pps ppx_jane)))
+ (libraries core ounit2 hft_engine qcheck qcheck-core))

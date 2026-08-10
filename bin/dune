@@ -1,6 +1,15 @@
 (executable
  (public_name hft_transpiler)
  (name transpiler)
+ (modules transpiler)
+ (libraries hft_engine core)
+ (preprocess
+  (pps ppx_jane)))
+
+(executable
+ (public_name hft_repl)
+ (name repl)
+ (modules repl)
  (libraries hft_engine core)
  (preprocess
   (pps ppx_jane)))

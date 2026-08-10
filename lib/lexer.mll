@@ -48,6 +48,7 @@ rule token = parse
 
   (* Literals & Identifiers *)
   | "#" (id as s) { ATOM s }
+  | "@" (id as s) { ATOM s }
   | float as f  { FLOAT (Float.of_string f) }
   | int as i    { INT (Int.of_string i) }
   | id as s     { ID s }

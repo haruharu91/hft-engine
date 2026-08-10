@@ -8,8 +8,8 @@ A high-performance, type-inferred quantitative execution database and matching e
 
 ## Key Features
 
-* **Multi-Dialect Architecture:** Choose the syntax that best matches your workflow (SOV, Formal Proof, or S-Expressions).
-* **Strict File-Level Syntax Isolation:** Enforces exactly one syntax dialect per file via versioned extensions (`.sov.hft`, `.proof.hft`, `.sexp.hft`).
+* **Multi-Dialect Architecture:** Choose the syntax that best matches your workflow (SOV, Infix (Formal Proof-like), or S-Expressions).
+* **Strict File-Level Syntax Isolation:** Enforces exactly one syntax dialect per file via versioned extensions (`.sov.hft`, `.infix.hft`, `.sexp.hft`).
 * **Role-Marked Postpositions (SOV):** Particle case markers (`ga`, `wo`/`o`, `ni`, `de`, `kara`, `no`) allow free word order while preserving deterministic, type-safe role mapping.
 * **Bi-Directional AST Transpiler:** Convert source code cleanly between any supported syntax format without modifying runtime behavior.
 * **Zero-Allocation Memory Model:** Record-lowered particle roles map directly to fixed stack structures for hot-path execution.
@@ -24,7 +24,7 @@ Files must use the base `.hft` extension prefixed with their syntax dialect:
 | File Extension | Syntax Dialect | Description |
 | --- | --- | --- |
 | `*.sov.hft` | **SOV Postpositions** | Free word-order syntax using Japanese-style particles. |
-| `*.proof.hft` | **Formal Proof** | Infix sequent calculus (` |
+| `*.infix.hft` | ** Infix-based like Proof Notation** | Infix sequent calculus-like infix notation |
 | `*.sexp.hft` | **S-Expressions** | Canonical Lisp-style wire format for logging and Raft IPC. |
 
 ---
@@ -64,7 +64,7 @@ tick_stream kara  (price > 100.0) de  matching_engine ni  filter_and_emit
 
 ```
 
-### 2. Formal Proof Syntax (`query.proof.hft`)
+### 2. Formal Proof Syntax (`query.infix.hft`)
 
 ```text
 tick_stream |- filter_and_emit (price > 100.0) |- emit @matching_engine
@@ -103,11 +103,11 @@ App (
 The repository includes a transpiler to convert files between dialects:
 
 ```bash
-# Convert Japanese SOV syntax into Formal Proof syntax
-dune exec hft_transpiler -- --from sov --to proof queries/trade.sov.hft -o queries/trade.proof.hft
+# Convert Japanese SOV syntax into Infix syntax, similar to formal proofs
+dune exec hft_transpiler -- --from sov --to infix queries/trade.sov.hft -o queries/trade.infix.hft
 
-# Convert Proof syntax into S-Expressions for network serialization
-dune exec hft_transpiler -- --from proof --to sexp queries/trade.proof.hft -o queries/trade.sexp.hft
+# Convert Proof syntax into S-Expressions for network serialisation
+dune exec hft_transpiler -- --from infix --to sexp queries/trade.infix.hft -o queries/trade.sexp.hft
 
 ```
 
@@ -191,5 +191,42 @@ lipo -create \
   _build/x86_64-apple-darwin/bin/main.exe \
   _build/arm64-apple-darwin/bin/main.exe \
   -output hft_engine_universal
+
+```
+
+## Interactive REPL Usage
+
+The engine includes an interactive Read-Eval-Print Loop (REPL) that allows you to experiment with different syntactical dialects (`SOV`, `Infix`, and `S-Expression`) and inspect their corresponding AST representations in real time.
+
+### Running the REPL
+
+Launch the REPL via Dune:
+
+```bash
+dune exec hft_repl
+
+```
+
+### REPL Commands
+
+* **`:sov`** — Switch active dialect to Subject-Object-Verb syntax (using postpositional particles).
+* **`:infix`** — Switch active dialect to Infix / Sequent Judgment syntax.
+* **`:sexp`** — Switch active dialect to Canonical S-Expression syntax.
+* **`exit`** or **`quit`** — Exit the REPL session.
+
+### Example Session
+
+```text
+=== HFT Notation Playground REPL ===  
+Commands: :sov, :infix, :sexp to switch dialects, or 'exit' to quit.
+
+hft [SOV]> :infix
+Switched dialect to Infix
+
+hft [Infix]> dark_pool_feed |- (size > 1000) |- route_order @smart_order_router
+
+[Parsed AST Successfully]:
+(App (App (Var route_order) (Lit (String smart_order_router)))
+ (App (BinOp Gt (Var size) (Lit (Int 1000))) (Var dark_pool_feed)))
 
 ```

@@ -35,5 +35,5 @@ and row =
 type poly_type = Scheme of string list * typ
 [@@deriving sexp, compare]
 
-type syntax_mode = SOV | Proof | Sexp
+type syntax_mode = SOV | Infix | Sexp
 [@@deriving sexp, compare]
