@@ -32,6 +32,14 @@ let rec analyze_cost (env : abs_env) (e : expr) : AbstractValue.t * int =
       let new_env = Map.set env ~key:v ~data:abs_v1 in
       let abs_v2, c2 = analyze_cost new_env e2 in
       (AbstractValue.join abs_v1 abs_v2, c1 + c2)
+  | Match (scrutinee, cases) ->
+      let _, scrutinee_cost = analyze_cost env scrutinee in
+      let cases_cost = 
+        List.fold cases ~init:0 ~f:(fun acc (_, body) -> 
+          let _, body_cost = analyze_cost env body in
+          acc + body_cost) 
+      in
+      (HeapAllocated, scrutinee_cost + cases_cost + 10)
   | Lambda _ | App _ ->
       (HeapAllocated, 100)
 

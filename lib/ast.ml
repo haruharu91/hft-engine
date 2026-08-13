@@ -3,11 +3,18 @@ open Core
 type lit =
   | Int of int
   | Float of float
+  | Money of string * float
   | String of string
   | Bool of bool
 [@@deriving sexp, compare]
 
 type binop = Add | Sub | Mul | Div | Eq | Lt | Gt | Lte | Gte | BitAnd
+[@@deriving sexp, compare]
+
+type pattern =
+  | PVar of string
+  | PLit of lit
+  | PWildcard
 [@@deriving sexp, compare]
 
 type expr =
@@ -19,6 +26,7 @@ type expr =
   | RecordAccess of expr * string
   | RecordCons of string * expr * expr
   | Let of string * expr * expr
+  | Match of expr * (pattern * expr) list
 [@@deriving sexp, compare]
 
 type typ =

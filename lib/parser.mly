@@ -12,13 +12,14 @@ let build_sov_record field_list =
     RecordCons (lbl, v, acc))
 %}
 
+%token <string * float> MONEY
+%token <string> ID ATOM
 %token <int> INT
 %token <float> FLOAT
-%token <string> ID ATOM
-%token PART_GA PART_WO PART_NI PART_DE PART_KARA PART_NO
+%token MATCH WITH TRUE FALSE PIPE ARROW UNDERSCORE
 %token RULE GIVEN YIELD WHERE
-%token TURNSTILE PIPE EQ GTE LTE GT LT
-%token PLUS MINUS STAR DIV
+%token PART_GA PART_WO PART_NI PART_DE PART_KARA PART_NO
+%token TURNSTILE EQ GTE LTE GT LT PLUS MINUS STAR DIV
 %token LPAREN RPAREN
 %token EOF
 
@@ -92,6 +93,9 @@ sexp_expr:
   | i = INT                   { Lit (Int i) }
   | f = FLOAT                 { Lit (Float f) }
   | a = ATOM                  { Lit (String a) }
+  | TRUE                      { Lit (Bool true) }
+  | FALSE                     { Lit (Bool false) }
+  | m = MONEY                 { let (s, f) = m in Lit (Money (s, f)) }
 
 op_symbol:
   | PLUS { Add } | MINUS { Sub } | STAR { Mul } | DIV { Div }
@@ -116,4 +120,24 @@ primary_expr:
   | i = INT                      { Lit (Int i) }
   | f = FLOAT                    { Lit (Float f) }
   | a = ATOM                     { Lit (String a) }
+  | TRUE                         { Lit (Bool true) }
+  | FALSE                        { Lit (Bool false) }
+  | m = MONEY                    { let (s, f) = m in Lit (Money (s, f)) }
   | LPAREN e = infix_expr RPAREN { e }
+  | match_e = match_expr         { match_e }
+
+match_expr:
+  | MATCH e = infix_expr WITH cases = list(match_case) { Match (e, cases) }
+
+match_case:
+  | PIPE p = pattern ARROW body = infix_expr { (p, body) }
+
+pattern:
+  | id = ID                      { PVar id }
+  | i = INT                      { PLit (Int i) }
+  | f = FLOAT                    { PLit (Float f) }
+  | a = ATOM                     { PLit (String a) }
+  | TRUE                         { PLit (Bool true) }
+  | FALSE                        { PLit (Bool false) }
+  | m = MONEY                    { let (s, f) = m in PLit (Money (s, f)) }
+  | UNDERSCORE                   { PWildcard }

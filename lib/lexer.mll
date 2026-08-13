@@ -5,15 +5,11 @@ open Parser
 exception Lexing_error of string
 }
 
-let white = [' ' '\t'] +
-let newline = '\r' | '\n' | "\r\n"
-let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']*
-let int = ['0'-'9']+
-let float = ['0'-'9']+ '.' ['0'-'9']*
-
 rule token = parse
-  | white       { token lexbuf }
-  | newline     { Lexing.new_line lexbuf; token lexbuf }
+  | [' ' '\t']+
+      { token lexbuf }
+  | '\r' | '\n' | "\r\n"
+      { Lexing.new_line lexbuf; token lexbuf }
   
   (* Japanese SOV Particles *)
   | "ga"        { PART_GA }
@@ -28,6 +24,15 @@ rule token = parse
   | "given"     { GIVEN }
   | "yield"     { YIELD }
   | "where"     { WHERE }
+
+  (* Pattern Matching & Boolean Keywords *)
+  | "match"     { MATCH }
+  | "with"      { WITH }
+  | "true"      { TRUE }
+  | "false"     { FALSE }
+  | "|"         { PIPE }
+  | "->"        { ARROW }
+  | "_"         { UNDERSCORE }
 
   (* Operators & Syntactic Symbols *)
   | "|-"        { TURNSTILE }
@@ -46,11 +51,19 @@ rule token = parse
   | "("         { LPAREN }
   | ")"         { RPAREN }
 
+  (* Money Literals - Placed above floats to avoid shadowing *)
+  | '$' (['0'-'9']+ '.' ['0'-'9']* as num) { 
+      MONEY ("$", Float.of_string num) 
+    }
+  | '$' (['0'-'9']+ as num) { 
+      MONEY ("$", Float.of_string num) 
+    }
+
   (* Literals & Identifiers *)
-  | "#" (id as s) { ATOM s }
-  | "@" (id as s) { ATOM s }
-  | float as f  { FLOAT (Float.of_string f) }
-  | int as i    { INT (Int.of_string i) }
-  | id as s     { ID s }
-  | eof         { EOF }
-  | _ as c      { raise (Lexing_error (Printf.sprintf "Unexpected token: %c" c)) }
+  | '#' (['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as s) { ATOM s }
+  | '@' (['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as s) { ATOM s }
+  | ['0'-'9']+ '.' ['0'-'9']* as f { FLOAT (Float.of_string f) }
+  | ['0'-'9']+ as i               { INT (Int.of_string i) }
+  | ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as s { ID s }
+  | eof                           { EOF }
+  | _ as c                        { raise (Lexing_error (Printf.sprintf "Unexpected token: %c" c)) }
